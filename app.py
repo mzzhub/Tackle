@@ -157,7 +157,7 @@ if uploaded_file:
 
 
     elif suffix == "zip":
-        with st.spinner("Analysing folder..."):
+        with st.spinner("Analyzing folder..."):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 zip_path = os.path.join(tmp_dir, uploaded_file.name)
                 with open(zip_path, "wb") as f:
@@ -166,12 +166,19 @@ if uploaded_file:
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(tmp_dir)
 
+                # Identify extracted root (skip hidden/system folders)
+                input_dir = next(
+                    (os.path.join(tmp_dir, d) for d in os.listdir(tmp_dir) 
+                    if os.path.isdir(os.path.join(tmp_dir, d)) and not d.startswith('.')), 
+                    tmp_dir
+                )
+
                 output_dir = os.path.join(tmp_dir, "output")
                 os.makedirs(output_dir, exist_ok=True)
 
-                for root, _, files in os.walk(tmp_dir):
-                    for file in files:
-                        file_path = os.path.join(root, file)
+                for file in os.listdir(input_dir):
+                    file_path = os.path.join(input_dir, file)
+                    if os.path.isfile(file_path):
                         if file.lower().endswith((".jpg", ".jpeg", ".png")):
                             img = Image.open(file_path).convert('RGB')
                             label = predict_image(img)
@@ -182,14 +189,12 @@ if uploaded_file:
                             with open(file_path, "rb") as vf:
                                 output_path = process_video(vf.read())
                                 os.rename(output_path, os.path.join(output_dir, file))
-                
 
                 # Zip the output files
                 result_zip = os.path.join(tmp_dir, "labeled_outputs.zip")
                 with zipfile.ZipFile(result_zip, 'w') as zipf:
-                    for root, _, files in os.walk(output_dir):
-                        for file in files:
-                            zipf.write(os.path.join(root, file), arcname=file)
+                    for file in os.listdir(output_dir):
+                        zipf.write(os.path.join(output_dir, file), arcname=file)
 
             with open(result_zip, "rb") as zf:
                 st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
