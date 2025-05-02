@@ -198,8 +198,11 @@ if uploaded_file:
                         for file in output_files:
                             zipf.write(os.path.join(output_dir, file), arcname=file)
 
-                    with open(result_zip, "rb") as zf:
-                        st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
+                    if os.path.exists(result_zip):
+                        with open(result_zip, "rb") as zf:
+                            st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
+                    else:
+                        st.warning("ZIP file could not be created.")
                 else:
                     st.warning("No valid images or videos were found in the uploaded ZIP.")
 
