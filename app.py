@@ -207,5 +207,5 @@ if uploaded_file:
                     st.warning("No valid images or videos were found in the uploaded ZIP.")
 
 
-            with open(result_zip, "rb") as zf:
-                st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
+                with open(result_zip, "rb") as zf:
+                    st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
