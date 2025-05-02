@@ -202,6 +202,6 @@ if uploaded_file:
                             file_path = os.path.join(root, file)
                             zipf.write(file_path, arcname=file)
 
-        # Step 6: Download button
-        with open(result_zip_path, "rb") as zf:
-            st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
+                # Step 6: Download button
+                with open(result_zip_path, "rb") as zf:
+                    st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
