@@ -31,7 +31,7 @@ def predict_image(image):
 # Draw label on image
 def draw_label(image, label):
     with st.spinner("Labelling..."):    
-        img_np = np.array(image)
+        img_np = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         h, w, _ = img_np.shape
         label_colors = {'clean_tackle': (0, 255, 0), 'foul': (0, 0, 255)}
         color = label_colors[label]
