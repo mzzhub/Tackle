@@ -158,7 +158,7 @@ if uploaded_file:
 
 
     elif suffix == "zip":
-        with st.spinner("Analyzing ZIP folder..."):
+        with st.spinner("Analyzing ZIP file..."):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 SUPPORTED_EXT = (".jpg", ".jpeg", ".png", ".mp4")
                 # Step 1: Save uploaded ZIP
