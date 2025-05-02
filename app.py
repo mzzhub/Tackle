@@ -162,36 +162,47 @@ if uploaded_file:
                 zip_path = os.path.join(tmp_dir, uploaded_file.name)
                 with open(zip_path, "wb") as f:
                     f.write(uploaded_file.read())
-    
+
+                # Extract ZIP
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(tmp_dir)
-    
+
+                # Create input and output directories
+                input_dir = os.path.join(tmp_dir, "input")
                 output_dir = os.path.join(tmp_dir, "output")
+                os.makedirs(input_dir, exist_ok=True)
                 os.makedirs(output_dir, exist_ok=True)
 
-                input_root = next((os.path.join(tmp_dir, d) for d in os.listdir(tmp_dir) if os.path.isdir(os.path.join(tmp_dir, d)) and d != "output" and not d.startswith(".")), tmp_dir)
-    
+                # Copy supported files to input_dir
                 for root, _, files in os.walk(tmp_dir):
+                    if root.startswith(output_dir) or root.startswith(input_dir):
+                        continue
                     for file in files:
-                        file_path = os.path.join(root, file)
-                        if file.lower().endswith((".jpg", ".jpeg", ".png")):
-                            img = Image.open(file_path).convert('RGB')
-                            label = predict_image(img)
-                            labeled = draw_label(img, label)
-                            labeled.save(os.path.join(output_dir, file))
-    
-                        elif file.lower().endswith(".mp4"):
-                            with open(file_path, "rb") as vf:
-                                output_path = process_video(vf.read())
-                                os.rename(output_path, os.path.join(output_dir, file))
-    
-    
+                        if file.lower().endswith((".jpg", ".jpeg", ".png", ".mp4")):
+                            src_path = os.path.join(root, file)
+                            dst_path = os.path.join(input_dir, file)
+                            os.rename(src_path, dst_path)
+
+                # Process only input_dir
+                for file in os.listdir(input_dir):
+                    file_path = os.path.join(input_dir, file)
+                    if file.lower().endswith((".jpg", ".jpeg", ".png")):
+                        img = Image.open(file_path).convert('RGB')
+                        label = predict_image(img)
+                        labeled = draw_label(img, label)
+                        labeled.save(os.path.join(output_dir, file))
+
+                    elif file.lower().endswith(".mp4"):
+                        with open(file_path, "rb") as vf:
+                            output_path = process_video(vf.read())
+                            os.rename(output_path, os.path.join(output_dir, file))
+
                 # Zip the output files
                 result_zip = os.path.join(tmp_dir, "labeled_outputs.zip")
                 with zipfile.ZipFile(result_zip, 'w') as zipf:
                     for root, _, files in os.walk(output_dir):
                         for file in files:
                             zipf.write(os.path.join(root, file), arcname=file)
-    
+
                 with open(result_zip, "rb") as zf:
                     st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
