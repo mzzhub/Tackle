@@ -191,10 +191,18 @@ if uploaded_file:
                                 os.rename(output_path, os.path.join(output_dir, file))
 
                 # Zip the output files
-                result_zip = os.path.join(tmp_dir, "labeled_outputs.zip")
-                with zipfile.ZipFile(result_zip, 'w') as zipf:
-                    for file in os.listdir(output_dir):
-                        zipf.write(os.path.join(output_dir, file), arcname=file)
+                output_files = os.listdir(output_dir)
+                if output_files:
+                    result_zip = os.path.join(tmp_dir, "labeled_outputs.zip")
+                    with zipfile.ZipFile(result_zip, 'w') as zipf:
+                        for file in output_files:
+                            zipf.write(os.path.join(output_dir, file), arcname=file)
+
+                    with open(result_zip, "rb") as zf:
+                        st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
+                else:
+                    st.warning("No valid images or videos were found in the uploaded ZIP.")
+
 
             with open(result_zip, "rb") as zf:
                 st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
