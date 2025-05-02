@@ -33,7 +33,7 @@ def draw_label(image, label):
     with st.spinner("Labelling..."):    
         img_np = np.array(image)
         h, w, _ = img_np.shape
-        label_colors = {'clean_tackle': (0, 255, 0), 'foul': (255, 0, 0)}
+        label_colors = {'clean_tackle': (0, 255, 0), 'foul': (0, 0, 255)}
         color = label_colors[label]
         border_thickness = 10
 
