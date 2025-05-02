@@ -17,7 +17,6 @@ def load_tackle_model():
 with st.spinner("Loading Model..."):
     model = load_tackle_model()
 class_labels = ['clean_tackle', 'foul']
-label_colors = {'clean_tackle': (0, 255, 0), 'foul': (0, 0, 255)}
 
 # Helper function for image prediction
 def predict_image(image):
@@ -34,6 +33,7 @@ def draw_label(image, label):
     with st.spinner("Labelling..."):    
         img_np = np.array(image)
         h, w, _ = img_np.shape
+        label_colors = {'clean_tackle': (0, 255, 0), 'foul': (255, 0, 0)}
         color = label_colors[label]
         border_thickness = 10
 
@@ -108,6 +108,7 @@ def process_video(video_bytes):
                 label = class_labels[int(prediction > 0.5)]
 
             # Add border and label
+            label_colors = {'clean_tackle': (0, 255, 0), 'foul': (0, 0, 255)}
             border_color = label_colors[label] if label else (0, 0, 0)
             output_frame = cv2.copyMakeBorder(output_frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=border_color)
             if label:
@@ -152,7 +153,6 @@ if uploaded_file:
 
         with open(result_path, "rb") as video_file:
             video_bytes = video_file.read()
-            st.video(video_bytes)  # Show only from bytes
             st.download_button("Download Video", video_bytes, file_name="labeled_video.mp4")
 
 
