@@ -159,33 +159,36 @@ if uploaded_file:
     elif suffix == "zip":
         with st.spinner("Analyzing folder..."):
             with tempfile.TemporaryDirectory() as tmp_dir:
+                # Save the uploaded zip file
                 zip_path = os.path.join(tmp_dir, uploaded_file.name)
                 with open(zip_path, "wb") as f:
                     f.write(uploaded_file.read())
 
-                # Extract ZIP
+                # Extract to a dedicated folder
+                extract_dir = os.path.join(tmp_dir, "extracted")
+                os.makedirs(extract_dir, exist_ok=True)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(tmp_dir)
+                    zip_ref.extractall(extract_dir)
 
-                # Create input and output directories
+                # Prepare input/output folders
                 input_dir = os.path.join(tmp_dir, "input")
                 output_dir = os.path.join(tmp_dir, "output")
                 os.makedirs(input_dir, exist_ok=True)
                 os.makedirs(output_dir, exist_ok=True)
 
-                # Copy supported files to input_dir
-                for root, _, files in os.walk(tmp_dir):
-                    if root.startswith(output_dir) or root.startswith(input_dir):
-                        continue
+                # Copy valid files to input_dir (avoids nested paths or repeated processing)
+                supported_ext = (".jpg", ".jpeg", ".png", ".mp4")
+                for root, _, files in os.walk(extract_dir):
                     for file in files:
-                        if file.lower().endswith((".jpg", ".jpeg", ".png", ".mp4")):
+                        if file.lower().endswith(supported_ext):
                             src_path = os.path.join(root, file)
                             dst_path = os.path.join(input_dir, file)
-                            os.rename(src_path, dst_path)
+                            shutil.copy2(src_path, dst_path)
 
-                # Process only input_dir
+                # Predict each file in input_dir only once
                 for file in os.listdir(input_dir):
                     file_path = os.path.join(input_dir, file)
+
                     if file.lower().endswith((".jpg", ".jpeg", ".png")):
                         img = Image.open(file_path).convert('RGB')
                         label = predict_image(img)
@@ -197,12 +200,13 @@ if uploaded_file:
                             output_path = process_video(vf.read())
                             os.rename(output_path, os.path.join(output_dir, file))
 
-                # Zip the output files
+                # Zip only the output directory
                 result_zip = os.path.join(tmp_dir, "labeled_outputs.zip")
                 with zipfile.ZipFile(result_zip, 'w') as zipf:
                     for root, _, files in os.walk(output_dir):
                         for file in files:
                             zipf.write(os.path.join(root, file), arcname=file)
 
+                # Provide download button
                 with open(result_zip, "rb") as zf:
                     st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
