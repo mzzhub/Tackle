@@ -9,53 +9,60 @@ from keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 from io import BytesIO
 
-# Load model
-model = load_model('mobilenetv2_hyper_tuned_model.h5')
+# Load model chacher
+@st.cache_resource
+def load_tackle_model():
+    return load_model('mobilenetv2_hyper_tuned_model.h5')
+# Loading data
+with st.spinner("Loading Model..."):
+    model = load_tackle_model()
 class_labels = ['clean_tackle', 'foul']
 label_colors = {'clean_tackle': (0, 255, 0), 'foul': (0, 0, 255)}
 
 # Helper function for image prediction
 def predict_image(image):
-    resized = image.resize((224, 224))
-    image_array = img_to_array(resized) / 255.0
-    image_array = np.expand_dims(image_array, axis=0)
-    prediction = model.predict(image_array, verbose=0)[0][0]
-    label = class_labels[int(prediction > 0.5)]
+    with st.spinner("Analyzing image..."):
+        resized = image.resize((224, 224))
+        image_array = img_to_array(resized) / 255.0
+        image_array = np.expand_dims(image_array, axis=0)
+        prediction = model.predict(image_array, verbose=0)[0][0]
+        label = class_labels[int(prediction > 0.5)]
     return label
 
 # Draw label on image
 def draw_label(image, label):
-    img_np = np.array(image)
-    h, w, _ = img_np.shape
-    color = label_colors[label]
-    border_thickness = 10
+    with st.spinner("Labelling..."):    
+        img_np = np.array(image)
+        h, w, _ = img_np.shape
+        color = label_colors[label]
+        border_thickness = 10
 
-    # Add border
-    img_np = cv2.copyMakeBorder(
-        img_np,
-        border_thickness,
-        border_thickness,
-        border_thickness,
-        border_thickness,
-        cv2.BORDER_CONSTANT,
-        value=color
-    )
+        # Add border
+        img_np = cv2.copyMakeBorder(
+            img_np,
+            border_thickness,
+            border_thickness,
+            border_thickness,
+            border_thickness,
+            cv2.BORDER_CONSTANT,
+            value=color
+        )
 
-    # Text settings
-    label_text = label.replace('_', ' ').title()
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1.2
-    thickness = 3
+        # Text settings
+        label_text = label.replace('_', ' ').title()
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1.2
+        thickness = 3
 
-    # Get text size
-    (text_width, text_height), _ = cv2.getTextSize(label_text, font, font_scale, thickness)
+        # Get text size
+        (text_width, text_height), _ = cv2.getTextSize(label_text, font, font_scale, thickness)
 
-    # Calculate centered position
-    x = (img_np.shape[1] - text_width) // 2
-    y = border_thickness + text_height + 10  # a little padding below the top border
+        # Calculate centered position
+        x = (img_np.shape[1] - text_width) // 2
+        y = border_thickness + text_height + 10  # a little padding below the top border
 
-    # Draw text
-    cv2.putText(img_np, label_text, (x, y), font, font_scale, color, thickness, cv2.LINE_AA)
+        # Draw text
+        cv2.putText(img_np, label_text, (x, y), font, font_scale, color, thickness, cv2.LINE_AA)
 
     return Image.fromarray(cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB))
 
@@ -63,63 +70,64 @@ def draw_label(image, label):
 
 # Video processing
 def process_video(video_bytes):
-    temp_input = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
-    temp_input.write(video_bytes)
-    temp_input.close()
+    with st.spinner("Analysing video..."):
+        temp_input = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+        temp_input.write(video_bytes)
+        temp_input.close()
 
-    cap = cv2.VideoCapture(temp_input.name)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        cap = cv2.VideoCapture(temp_input.name)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    temp_output = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(temp_output.name, fourcc, fps, (width + 20, height + 20))
+        temp_output = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(temp_output.name, fourcc, fps, (width + 20, height + 20))
 
-    ret, prev_frame = cap.read()
-    prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+        ret, prev_frame = cap.read()
+        prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        output_frame = frame.copy()
-        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        diff = cv2.absdiff(prev_gray, frame_gray)
-        _, thresh = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        contact_detected = any(cv2.contourArea(c) > 500 for c in contours)
+            output_frame = frame.copy()
+            frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            diff = cv2.absdiff(prev_gray, frame_gray)
+            _, thresh = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contact_detected = any(cv2.contourArea(c) > 500 for c in contours)
 
-        label = None
-        if contact_detected:
-            resized = cv2.resize(frame, (224, 224))
-            image_array = img_to_array(resized) / 255.0
-            image_array = np.expand_dims(image_array, axis=0)
-            prediction = model.predict(image_array, verbose=0)[0][0]
-            label = class_labels[int(prediction > 0.5)]
+            label = None
+            if contact_detected:
+                resized = cv2.resize(frame, (224, 224))
+                image_array = img_to_array(resized) / 255.0
+                image_array = np.expand_dims(image_array, axis=0)
+                prediction = model.predict(image_array, verbose=0)[0][0]
+                label = class_labels[int(prediction > 0.5)]
 
-        # Add border and label
-        border_color = label_colors[label] if label else (0, 0, 0)
-        output_frame = cv2.copyMakeBorder(output_frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=border_color)
-        if label:
-            # Centered text
-            label_text = label.replace('_', ' ').title()
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 1.2
-            thickness = 3
+            # Add border and label
+            border_color = label_colors[label] if label else (0, 0, 0)
+            output_frame = cv2.copyMakeBorder(output_frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=border_color)
+            if label:
+                # Centered text
+                label_text = label.replace('_', ' ').title()
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 1.2
+                thickness = 3
 
-            (text_width, text_height), _ = cv2.getTextSize(label_text, font, font_scale, thickness)
-            x = (output_frame.shape[1] - text_width) // 2
-            y = 40 + text_height
+                (text_width, text_height), _ = cv2.getTextSize(label_text, font, font_scale, thickness)
+                x = (output_frame.shape[1] - text_width) // 2
+                y = 40 + text_height
 
-            cv2.putText(output_frame, label_text, (x, y), font, font_scale, border_color, thickness, cv2.LINE_AA)
+                cv2.putText(output_frame, label_text, (x, y), font, font_scale, border_color, thickness, cv2.LINE_AA)
 
-        out.write(output_frame)
-        prev_gray = frame_gray
+            out.write(output_frame)
+            prev_gray = frame_gray
 
-    cap.release()
-    out.release()
+        cap.release()
+        out.release()
 
     return temp_output.name
 
