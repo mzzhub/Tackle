@@ -149,11 +149,12 @@ if uploaded_file:
 
     elif suffix == "mp4":
         result_path = process_video(uploaded_file.read())
-        st.video(result_path)
+
         with open(result_path, "rb") as video_file:
             video_bytes = video_file.read()
-            st.video(video_bytes)
+            st.video(video_bytes)  # Show only from bytes
             st.download_button("Download Video", video_bytes, file_name="labeled_video.mp4")
+
 
     elif suffix == "zip":
         with tempfile.TemporaryDirectory() as tmp_dir:
