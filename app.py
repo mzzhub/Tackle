@@ -3,6 +3,7 @@ import zipfile
 import tempfile
 import os
 import cv2
+import shutil
 import numpy as np
 from PIL import Image
 from keras.models import load_model
@@ -157,56 +158,50 @@ if uploaded_file:
 
 
     elif suffix == "zip":
-        with st.spinner("Analyzing folder..."):
+        with st.spinner("Analyzing ZIP folder..."):
             with tempfile.TemporaryDirectory() as tmp_dir:
-                # Save the uploaded zip file
+                # Step 1: Save uploaded ZIP
                 zip_path = os.path.join(tmp_dir, uploaded_file.name)
                 with open(zip_path, "wb") as f:
-                    f.write(uploaded_file.read())
+                    f.write(uploaded_file.getbuffer())
 
-                # Extract to a dedicated folder
+                # Step 2: Extract ZIP
                 extract_dir = os.path.join(tmp_dir, "extracted")
                 os.makedirs(extract_dir, exist_ok=True)
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(extract_dir)
 
-                # Prepare input/output folders
-                input_dir = os.path.join(tmp_dir, "input")
-                output_dir = os.path.join(tmp_dir, "output")
-                os.makedirs(input_dir, exist_ok=True)
+                # Step 3: Prepare output dir
+                output_dir = os.path.join(tmp_dir, "labeled_outputs")
                 os.makedirs(output_dir, exist_ok=True)
 
-                # Copy valid files to input_dir (avoids nested paths or repeated processing)
-                supported_ext = (".jpg", ".jpeg", ".png", ".mp4")
+                # Step 4: Predict each supported file
                 for root, _, files in os.walk(extract_dir):
                     for file in files:
-                        if file.lower().endswith(supported_ext):
-                            src_path = os.path.join(root, file)
-                            dst_path = os.path.join(input_dir, file)
-                            shutil.copy2(src_path, dst_path)
+                        if file.lower().endswith(SUPPORTED_EXT):
+                            input_path = os.path.join(root, file)
+                            output_path = os.path.join(output_dir, file)
 
-                # Predict each file in input_dir only once
-                for file in os.listdir(input_dir):
-                    file_path = os.path.join(input_dir, file)
+                            if file.lower().endswith((".jpg", ".jpeg", ".png")):
+                                img = Image.open(input_path).convert("RGB")
+                                label = predict_image(img)
+                                labeled = draw_label(img, label)
+                                labeled.save(output_path)
 
-                    if file.lower().endswith((".jpg", ".jpeg", ".png")):
-                        img = Image.open(file_path).convert('RGB')
-                        label = predict_image(img)
-                        labeled = draw_label(img, label)
-                        labeled.save(os.path.join(output_dir, file))
+                            elif file.lower().endswith(".mp4"):
+                                with open(input_path, "rb") as vf:
+                                    result = process_video(vf.read())  # You must ensure this returns a valid file path
+                                    if os.path.exists(result):
+                                        shutil.move(result, output_path)
 
-                    elif file.lower().endswith(".mp4"):
-                        with open(file_path, "rb") as vf:
-                            output_path = process_video(vf.read())
-                            os.rename(output_path, os.path.join(output_dir, file))
-
-                # Zip only the output directory
-                result_zip = os.path.join(tmp_dir, "labeled_outputs.zip")
-                with zipfile.ZipFile(result_zip, 'w') as zipf:
+                # Step 5: Zip results
+                result_zip_path = os.path.join(tmp_dir, "result.zip")
+                with zipfile.ZipFile(result_zip_path, 'w') as zipf:
                     for root, _, files in os.walk(output_dir):
                         for file in files:
-                            zipf.write(os.path.join(root, file), arcname=file)
+                            file_path = os.path.join(root, file)
+                            zipf.write(file_path, arcname=file)
 
-                # Provide download button
-                with open(result_zip, "rb") as zf:
+                # Step 6: Download button
+                with open(result_zip_path, "rb") as zf:
                     st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
