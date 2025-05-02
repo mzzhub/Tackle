@@ -168,6 +168,8 @@ if uploaded_file:
     
                 output_dir = os.path.join(tmp_dir, "output")
                 os.makedirs(output_dir, exist_ok=True)
+
+                input_root = next((os.path.join(tmp_dir, d) for d in os.listdir(tmp_dir) if os.path.isdir(os.path.join(tmp_dir, d)) and d != "output" and not d.startswith(".")), tmp_dir)
     
                 for root, _, files in os.walk(tmp_dir):
                     for file in files:
@@ -193,4 +195,3 @@ if uploaded_file:
     
                 with open(result_zip, "rb") as zf:
                     st.download_button("Download Labeled ZIP", zf.read(), file_name="labeled_outputs.zip")
-                    
