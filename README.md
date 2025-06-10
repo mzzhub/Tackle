@@ -46,15 +46,6 @@ Click the image to launch the app.
 
 ---
 
-## 🛠️ Project Structure
-
-- app.py                            # Main Streamlit app
-- mobilenetv2_hyper_tuned_model.h5  # Pre-trained model
-- screenshots/                      # Demo screenshots
-- README.md                         # Project overview
-
----
-
 ## 🤝 Contributing
 
 Pull requests are welcome! Feel free to open issues for suggestions or bug fixes.
@@ -65,7 +56,6 @@ Pull requests are welcome! Feel free to open issues for suggestions or bug fixes
 
 - Support for additional tackle scenarios (e.g., slide tackle, header challenge)
 - Enhanced video analysis for smoother frame transitions
-- Deployment on cloud platforms (AWS/GCP/Azure)
 
 ---
 
