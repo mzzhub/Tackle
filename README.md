@@ -10,7 +10,7 @@ This project focuses on classifying football tackles from videos or images into 
   <img src="./screenshots/presentation.png" alt="Screenshot" width="400"/>
 </a>
 
-Click the image to view the presentation
+Click the image to view the presentation.
 
 
 ---
@@ -38,25 +38,11 @@ We used the [Football Tackles Dataset](https://www.kaggle.com/datasets/zaikali/f
 
 ---
 
-## 🖥️ Usage
+## 🖥️ Web App
 
-1. **Clone the repository:**
-    ```bash
-    git clone https://github.com/mzzhub/tackle-classifier.git
-    cd tackle-classifier
-    ```
+[![Screenshot](./screenshots/app_overview.png)](https://tackle.streamlit.app/)
 
-2. **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-3. **Run the app:**
-    ```bash
-    streamlit run app.py
-    ```
-
-4. **Access the web interface** in your browser at `http://localhost:8501`.
+Click the image to launch the app.
 
 ---
 
