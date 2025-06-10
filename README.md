@@ -48,12 +48,10 @@ Click the image to launch the app.
 
 ## 🛠️ Project Structure
 
-├── app.py # Main Streamlit app
-├── mobilenetv2_hyper_tuned_model.h5 # Pre-trained model
-├── utils.py # (Optional) Helper functions
-├── screenshots/ # Demo screenshots
-└── README.md # Project overview
-
+app.py # Main Streamlit app
+mobilenetv2_hyper_tuned_model.h5 # Pre-trained model
+screenshots/ # Demo screenshots
+README.md # Project overview
 
 ---
 
