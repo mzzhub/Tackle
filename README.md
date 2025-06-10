@@ -40,7 +40,7 @@ We used the [Football Tackles Dataset](https://www.kaggle.com/datasets/zaikali/f
 
 ## 🖥️ Web App
 
-[![Screenshot](screenshots/app_overview.png)](https://tackle.streamlit.app/)
+[![Screenshot](screenshots/web_app_overview.png)](https://tackle.streamlit.app/)
 
 Click the image to launch the app.
 
