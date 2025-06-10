@@ -72,12 +72,4 @@ This project is open-source and available under the [MIT License](LICENSE).
 
 ---
 
-> **Note:** Model file (`mobilenetv2_hyper_tuned_model.h5`) is large and may need to be downloaded separately if not included in this repository.
-
----
-
-📬 For queries, reach out at [Your Email/LinkedIn].
-
----
-
 Happy coding! ⚽
