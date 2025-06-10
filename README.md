@@ -7,7 +7,7 @@ This project focuses on classifying football tackles from videos or images into 
 ## 🚀 Presentation
 
 <a href="https://www.canva.com/design/DAGmXyqPTvc/IWmIvySg9FaZgZq-jBD9sQ/view?utm_content=DAGmXyqPTvc&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utmId=ha781bc27b7">
-  <img src="./screenshots/presentation.png" alt="Screenshot" width="400" style="border-radius: 15px;"/>
+  <img src="./screenshots/presentation.png" alt="Screenshot" width="400"/>
 </a>
 
 Click the image to view the presentation.
