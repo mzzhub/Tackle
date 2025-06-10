@@ -2,7 +2,14 @@
 
 This project focuses on classifying football tackles from videos or images into two categories: `clean_tackle` and `foul`, using a deep learning model.
 
-![Example Screenshot](./screenshots/app_overview.png) <!-- adjust path if needed -->
+---
+
+## 🚀 Presentation
+[![Screenshot](./screenshots/presentation.png)](https://www.canva.com/design/DAGmXyqPTvc/IWmIvySg9FaZgZq-jBD9sQ/view?utm_content=DAGmXyqPTvc&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=ha781bc27b7)
+
+
+
+![Example Screenshot](./screenshots/presentation.png)
 
 ---
 
